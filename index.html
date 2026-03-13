@@ -1,0 +1,2813 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MarketVerse - Modern Marketplace</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Syne:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg-primary: #050510;
+      --bg-secondary: #0a0a1a;
+      --bg-card: rgba(15, 15, 35, 0.7);
+      --fg: #ffffff;
+      --fg-muted: #8892a8;
+      --accent-cyan: #00d4ff;
+      --accent-magenta: #ff0080;
+      --accent-gold: #ffd700;
+      --accent-green: #00ff88;
+      --border: rgba(255, 255, 255, 0.08);
+      --glass: rgba(255, 255, 255, 0.03);
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    html {
+      scroll-behavior: smooth;
+    }
+
+    body {
+      font-family: 'Space Grotesk', sans-serif;
+      background: var(--bg-primary);
+      color: var(--fg);
+      overflow-x: hidden;
+      min-height: 100vh;
+    }
+
+    /* Animated Background */
+    #animated-bg {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 0;
+      overflow: hidden;
+      background: linear-gradient(135deg, #050510 0%, #0a1628 50%, #150a28 100%);
+    }
+
+    .star {
+      position: absolute;
+      border-radius: 50%;
+      animation: floatStar linear infinite;
+      pointer-events: none;
+    }
+
+    @keyframes floatStar {
+      0%, 100% { transform: translate(0, 0) scale(1); opacity: 0.8; }
+      50% { transform: translate(var(--tx), var(--ty)) scale(1.2); opacity: 1; }
+    }
+
+    .geo-shape {
+      position: absolute;
+      opacity: 0.15;
+      animation: floatShape 20s ease-in-out infinite, rotateShape 30s linear infinite;
+      pointer-events: none;
+    }
+
+    @keyframes floatShape {
+      0%, 100% { transform: translateY(0) rotate(0deg); }
+      25% { transform: translateY(-30px) rotate(90deg); }
+      50% { transform: translateY(0) rotate(180deg); }
+      75% { transform: translateY(30px) rotate(270deg); }
+    }
+
+    @keyframes rotateShape {
+      from { transform: rotate(0deg); }
+      to { transform: rotate(360deg); }
+    }
+
+    .particle {
+      position: absolute;
+      border-radius: 50%;
+      pointer-events: none;
+      animation: particleFloat 15s linear infinite;
+    }
+
+    @keyframes particleFloat {
+      0% { transform: translateY(100vh) scale(0); opacity: 0; }
+      10% { opacity: 1; }
+      90% { opacity: 1; }
+      100% { transform: translateY(-100vh) scale(1); opacity: 0; }
+    }
+
+    /* Landing Screen */
+    #landing-screen {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 9999;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: linear-gradient(135deg, #050510 0%, #0a1628 50%, #150a28 100%);
+      transition: opacity 1s ease, visibility 1s ease;
+    }
+
+    #landing-screen.hidden {
+      opacity: 0;
+      visibility: hidden;
+      pointer-events: none;
+    }
+
+    .landing-content {
+      text-align: center;
+      z-index: 10;
+    }
+
+    .landing-title {
+      font-family: 'Syne', sans-serif;
+      font-size: clamp(1.5rem, 5vw, 3.5rem);
+      font-weight: 800;
+      background: linear-gradient(90deg, var(--accent-cyan), var(--accent-magenta), var(--accent-gold));
+      background-size: 300% 300%;
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      animation: gradientShift 4s ease infinite, revealText 2s ease forwards;
+      opacity: 0;
+      transform: translateY(30px);
+    }
+
+    @keyframes gradientShift {
+      0%, 100% { background-position: 0% 50%; }
+      50% { background-position: 100% 50%; }
+    }
+
+    @keyframes revealText {
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .enter-btn {
+      margin-top: 2rem;
+      padding: 1rem 3rem;
+      font-size: 1.1rem;
+      font-weight: 600;
+      background: linear-gradient(135deg, var(--accent-cyan), var(--accent-magenta));
+      border: none;
+      border-radius: 50px;
+      color: white;
+      cursor: pointer;
+      opacity: 0;
+      transform: translateY(20px);
+      animation: revealText 1s ease 1.5s forwards;
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+
+    .enter-btn:hover {
+      transform: translateY(-3px) scale(1.05);
+      box-shadow: 0 20px 40px rgba(0, 212, 255, 0.3);
+    }
+
+    /* Navigation */
+    #main-nav {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      z-index: 1000;
+      padding: 1rem 2rem;
+      background: rgba(5, 5, 16, 0.8);
+      backdrop-filter: blur(20px);
+      border-bottom: 1px solid var(--border);
+      transform: translateY(-100%);
+      transition: transform 0.5s ease;
+    }
+
+    #main-nav.visible {
+      transform: translateY(0);
+    }
+
+    .nav-container {
+      max-width: 1400px;
+      margin: 0 auto;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .logo {
+      font-family: 'Syne', sans-serif;
+      font-size: 1.5rem;
+      font-weight: 800;
+      background: linear-gradient(90deg, var(--accent-cyan), var(--accent-magenta));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      cursor: pointer;
+    }
+
+    .nav-links {
+      display: flex;
+      gap: 0.5rem;
+      list-style: none;
+    }
+
+    .nav-link {
+      padding: 0.75rem 1.25rem;
+      color: var(--fg-muted);
+      text-decoration: none;
+      font-weight: 500;
+      font-size: 0.9rem;
+      border-radius: 8px;
+      transition: all 0.3s ease;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .nav-link::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(135deg, var(--accent-cyan), var(--accent-magenta));
+      opacity: 0;
+      transition: opacity 0.3s ease;
+      border-radius: 8px;
+    }
+
+    .nav-link:hover {
+      color: var(--fg);
+    }
+
+    .nav-link:hover::before {
+      opacity: 0.15;
+    }
+
+    .nav-link.active {
+      color: var(--accent-cyan);
+    }
+
+    .nav-right {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+
+    .notification-btn {
+      position: relative;
+      width: 40px;
+      height: 40px;
+      border-radius: 10px;
+      background: var(--glass);
+      border: 1px solid var(--border);
+      color: var(--fg-muted);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.3s ease;
+    }
+
+    .notification-btn:hover {
+      color: var(--fg);
+      border-color: var(--accent-cyan);
+    }
+
+    .notification-badge {
+      position: absolute;
+      top: -5px;
+      right: -5px;
+      width: 18px;
+      height: 18px;
+      background: var(--accent-magenta);
+      border-radius: 50%;
+      font-size: 0.7rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-weight: 600;
+    }
+
+    .user-avatar {
+      width: 40px;
+      height: 40px;
+      border-radius: 10px;
+      background: linear-gradient(135deg, var(--accent-cyan), var(--accent-magenta));
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 600;
+      cursor: pointer;
+      transition: transform 0.3s ease;
+      overflow: hidden;
+    }
+
+    .user-avatar img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .user-avatar:hover {
+      transform: scale(1.1);
+    }
+
+    /* Mobile Menu */
+    .mobile-menu-btn {
+      display: none;
+      width: 40px;
+      height: 40px;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 5px;
+      background: transparent;
+      border: none;
+      cursor: pointer;
+    }
+
+    .mobile-menu-btn span {
+      width: 24px;
+      height: 2px;
+      background: var(--fg);
+      transition: all 0.3s ease;
+    }
+
+    @media (max-width: 1024px) {
+      .nav-links {
+        display: none;
+      }
+
+      .mobile-menu-btn {
+        display: flex;
+      }
+
+      .nav-links.mobile-open {
+        display: flex;
+        position: absolute;
+        top: 100%;
+        left: 0;
+        width: 100%;
+        flex-direction: column;
+        background: rgba(5, 5, 16, 0.98);
+        padding: 1rem;
+        border-bottom: 1px solid var(--border);
+      }
+    }
+
+    /* Main Content */
+    #main-content {
+      position: relative;
+      z-index: 1;
+      opacity: 0;
+      transition: opacity 0.5s ease;
+    }
+
+    #main-content.visible {
+      opacity: 1;
+    }
+
+    /* Page Sections */
+    .page-section {
+      min-height: 100vh;
+      padding: 6rem 2rem 2rem;
+    }
+
+    /* Glass Cards */
+    .glass-card {
+      background: var(--bg-card);
+      backdrop-filter: blur(20px);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 1.5rem;
+      transition: all 0.4s ease;
+    }
+
+    .glass-card:hover {
+      border-color: rgba(0, 212, 255, 0.3);
+      transform: translateY(-5px);
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3), 0 0 60px rgba(0, 212, 255, 0.1);
+    }
+
+    /* Buttons */
+    .btn-primary {
+      padding: 0.875rem 2rem;
+      background: linear-gradient(135deg, var(--accent-cyan), #0099cc);
+      border: none;
+      border-radius: 12px;
+      color: white;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+
+    .btn-primary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 10px 30px rgba(0, 212, 255, 0.4);
+    }
+
+    .btn-secondary {
+      padding: 0.875rem 2rem;
+      background: transparent;
+      border: 2px solid var(--accent-magenta);
+      border-radius: 12px;
+      color: var(--accent-magenta);
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+
+    .btn-secondary:hover {
+      background: var(--accent-magenta);
+      color: white;
+    }
+
+    .btn-danger {
+      padding: 0.5rem 1rem;
+      background: rgba(255, 0, 80, 0.2);
+      border: 1px solid var(--accent-magenta);
+      border-radius: 8px;
+      color: var(--accent-magenta);
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      font-size: 0.85rem;
+    }
+
+    .btn-danger:hover {
+      background: var(--accent-magenta);
+      color: white;
+    }
+
+    /* Form Styles */
+    .form-group {
+      margin-bottom: 1.5rem;
+    }
+
+    .form-label {
+      display: block;
+      margin-bottom: 0.5rem;
+      color: var(--fg-muted);
+      font-weight: 500;
+      font-size: 0.9rem;
+    }
+
+    .form-input {
+      width: 100%;
+      padding: 1rem 1.25rem;
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      color: var(--fg);
+      font-size: 1rem;
+      transition: all 0.3s ease;
+    }
+
+    .form-input:focus {
+      outline: none;
+      border-color: var(--accent-cyan);
+      box-shadow: 0 0 20px rgba(0, 212, 255, 0.2);
+    }
+
+    .form-input::placeholder {
+      color: var(--fg-muted);
+    }
+
+    /* Select Dropdown Fix - Dark Theme */
+    select.form-input {
+      appearance: none;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%238892a8' stroke-width='2'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 1rem center;
+      padding-right: 3rem;
+      cursor: pointer;
+    }
+
+    select.form-input option {
+      background: #0a0a1a;
+      color: var(--fg);
+      padding: 0.5rem;
+    }
+
+    select.form-input option:hover,
+    select.form-input option:checked {
+      background: #1a1a3a;
+      color: var(--accent-cyan);
+    }
+
+    /* Search Bar */
+    .search-container {
+      max-width: 800px;
+      margin: 0 auto;
+    }
+
+    .search-box {
+      display: flex;
+      gap: 0.5rem;
+      background: var(--bg-card);
+      backdrop-filter: blur(20px);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 0.5rem;
+    }
+
+    .search-input {
+      flex: 1;
+      padding: 1rem;
+      background: transparent;
+      border: none;
+      color: var(--fg);
+      font-size: 1rem;
+    }
+
+    .search-input:focus {
+      outline: none;
+    }
+
+    .search-select {
+      padding: 0.75rem 1rem;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      color: var(--fg);
+      font-size: 0.9rem;
+      cursor: pointer;
+      min-width: 150px;
+    }
+
+    .search-select option {
+      background: #0a0a1a;
+      color: var(--fg);
+    }
+
+    .search-btn {
+      padding: 1rem 2rem;
+      background: linear-gradient(135deg, var(--accent-cyan), var(--accent-magenta));
+      border: none;
+      border-radius: 12px;
+      color: white;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+
+    .search-btn:hover {
+      transform: scale(1.05);
+    }
+
+    /* Categories */
+    .category-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+      gap: 1rem;
+    }
+
+    .category-card {
+      padding: 1.5rem;
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+
+    .category-card:hover {
+      border-color: var(--accent-cyan);
+      transform: translateY(-5px);
+      box-shadow: 0 10px 30px rgba(0, 212, 255, 0.2);
+    }
+
+    .category-icon {
+      font-size: 2rem;
+      margin-bottom: 0.75rem;
+    }
+
+    .category-name {
+      font-weight: 600;
+      color: var(--fg);
+    }
+
+    .category-count {
+      font-size: 0.8rem;
+      color: var(--fg-muted);
+      margin-top: 0.25rem;
+    }
+
+    /* Listings Grid */
+    .listings-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 1.5rem;
+    }
+
+    .listing-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      overflow: hidden;
+      cursor: pointer;
+      transition: all 0.4s ease;
+    }
+
+    .listing-card:hover {
+      transform: translateY(-8px) scale(1.02);
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4), 0 0 60px rgba(0, 212, 255, 0.15);
+      border-color: rgba(0, 212, 255, 0.3);
+    }
+
+    .listing-image {
+      width: 100%;
+      height: 200px;
+      object-fit: cover;
+      background: linear-gradient(135deg, #1a1a2e, #16213e);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 3rem;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .listing-image img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      transition: transform 0.5s ease;
+    }
+
+    .listing-card:hover .listing-image img {
+      transform: scale(1.1);
+    }
+
+    .favorite-btn {
+      position: absolute;
+      top: 1rem;
+      right: 1rem;
+      width: 36px;
+      height: 36px;
+      background: rgba(0, 0, 0, 0.5);
+      backdrop-filter: blur(10px);
+      border: none;
+      border-radius: 50%;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.3s ease;
+      color: white;
+    }
+
+    .favorite-btn:hover {
+      background: var(--accent-magenta);
+      transform: scale(1.1);
+    }
+
+    .favorite-btn.active {
+      background: var(--accent-magenta);
+    }
+
+    .listing-content {
+      padding: 1.25rem;
+    }
+
+    .listing-title {
+      font-weight: 600;
+      font-size: 1.1rem;
+      margin-bottom: 0.5rem;
+      color: var(--fg);
+    }
+
+    .listing-price {
+      font-size: 1.25rem;
+      font-weight: 700;
+      color: var(--accent-cyan);
+      margin-bottom: 0.75rem;
+    }
+
+    .listing-meta {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.85rem;
+      color: var(--fg-muted);
+    }
+
+    .listing-seller {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      margin-top: 0.75rem;
+      padding-top: 0.75rem;
+      border-top: 1px solid var(--border);
+    }
+
+    .listing-seller-avatar {
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--accent-cyan), var(--accent-magenta));
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.75rem;
+      font-weight: 600;
+      overflow: hidden;
+    }
+
+    .listing-seller-avatar img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    /* Modal */
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.8);
+      backdrop-filter: blur(10px);
+      z-index: 2000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 2rem;
+      opacity: 0;
+      visibility: hidden;
+      transition: all 0.3s ease;
+    }
+
+    .modal-overlay.active {
+      opacity: 1;
+      visibility: visible;
+    }
+
+    .modal-content {
+      background: var(--bg-secondary);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      max-width: 600px;
+      width: 100%;
+      max-height: 90vh;
+      overflow-y: auto;
+      transform: scale(0.9) translateY(20px);
+      transition: transform 0.3s ease;
+    }
+
+    .modal-overlay.active .modal-content {
+      transform: scale(1) translateY(0);
+    }
+
+    .modal-header {
+      padding: 1.5rem;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .modal-title {
+      font-size: 1.25rem;
+      font-weight: 600;
+    }
+
+    .modal-close {
+      width: 36px;
+      height: 36px;
+      background: transparent;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      cursor: pointer;
+      color: var(--fg-muted);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.3s ease;
+    }
+
+    .modal-close:hover {
+      border-color: var(--accent-magenta);
+      color: var(--accent-magenta);
+    }
+
+    .modal-body {
+      padding: 1.5rem;
+    }
+
+    /* Dashboard */
+    .dashboard-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 1.5rem;
+      margin-bottom: 2rem;
+    }
+
+    @media (max-width: 1024px) {
+      .dashboard-grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
+    }
+
+    @media (max-width: 640px) {
+      .dashboard-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .stat-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 1.5rem;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .stat-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 4px;
+      height: 100%;
+      background: linear-gradient(180deg, var(--accent-cyan), var(--accent-magenta));
+    }
+
+    .stat-value {
+      font-size: 2.5rem;
+      font-weight: 700;
+      background: linear-gradient(90deg, var(--accent-cyan), var(--accent-magenta));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .stat-label {
+      color: var(--fg-muted);
+      margin-top: 0.5rem;
+    }
+
+    /* Profile Section */
+    .profile-header {
+      display: flex;
+      align-items: center;
+      gap: 2rem;
+      padding: 2rem;
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      margin-bottom: 2rem;
+    }
+
+    .profile-avatar-container {
+      position: relative;
+    }
+
+    .profile-avatar {
+      width: 120px;
+      height: 120px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--accent-cyan), var(--accent-magenta));
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 3rem;
+      font-weight: 700;
+      overflow: hidden;
+      border: 3px solid var(--accent-cyan);
+    }
+
+    .profile-avatar img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .profile-avatar-edit {
+      position: absolute;
+      bottom: 5px;
+      right: 5px;
+      width: 36px;
+      height: 36px;
+      background: var(--accent-cyan);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: transform 0.3s ease;
+      border: 2px solid var(--bg-primary);
+    }
+
+    .profile-avatar-edit:hover {
+      transform: scale(1.1);
+    }
+
+    .profile-info h2 {
+      font-size: 1.75rem;
+      font-weight: 700;
+      margin-bottom: 0.5rem;
+    }
+
+    .profile-info p {
+      color: var(--fg-muted);
+      margin-bottom: 1rem;
+    }
+
+    .profile-stats {
+      display: flex;
+      gap: 2rem;
+    }
+
+    .profile-stat {
+      text-align: center;
+    }
+
+    .profile-stat-value {
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: var(--accent-cyan);
+    }
+
+    .profile-stat-label {
+      font-size: 0.85rem;
+      color: var(--fg-muted);
+    }
+
+    /* Footer */
+    footer {
+      background: var(--bg-secondary);
+      border-top: 1px solid var(--border);
+      padding: 4rem 2rem 2rem;
+      margin-top: 4rem;
+    }
+
+    .footer-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 2rem;
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
+    .footer-title {
+      font-weight: 600;
+      margin-bottom: 1rem;
+      color: var(--fg);
+    }
+
+    .footer-links {
+      list-style: none;
+    }
+
+    .footer-links li {
+      margin-bottom: 0.75rem;
+    }
+
+    .footer-links a {
+      color: var(--fg-muted);
+      text-decoration: none;
+      transition: color 0.3s ease;
+    }
+
+    .footer-links a:hover {
+      color: var(--accent-cyan);
+    }
+
+    .social-links {
+      display: flex;
+      gap: 1rem;
+      margin-top: 1rem;
+    }
+
+    .social-link {
+      width: 40px;
+      height: 40px;
+      background: var(--glass);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--fg-muted);
+      transition: all 0.3s ease;
+    }
+
+    .social-link:hover {
+      border-color: var(--accent-cyan);
+      color: var(--accent-cyan);
+      transform: translateY(-3px);
+    }
+
+    /* Animations */
+    .fade-in {
+      animation: fadeIn 0.6s ease forwards;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .stagger-1 { animation-delay: 0.1s; }
+    .stagger-2 { animation-delay: 0.2s; }
+    .stagger-3 { animation-delay: 0.3s; }
+    .stagger-4 { animation-delay: 0.4s; }
+
+    /* Theme Toggle */
+    .theme-toggle {
+      width: 50px;
+      height: 26px;
+      background: var(--glass);
+      border: 1px solid var(--border);
+      border-radius: 13px;
+      cursor: pointer;
+      position: relative;
+      transition: all 0.3s ease;
+    }
+
+    .theme-toggle::after {
+      content: '';
+      position: absolute;
+      width: 20px;
+      height: 20px;
+      background: var(--accent-cyan);
+      border-radius: 50%;
+      top: 2px;
+      left: 2px;
+      transition: transform 0.3s ease;
+    }
+
+    .theme-toggle.light::after {
+      transform: translateX(24px);
+      background: var(--accent-gold);
+    }
+
+    /* Image Upload */
+    .image-upload-area {
+      border: 2px dashed var(--border);
+      border-radius: 16px;
+      padding: 2rem;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+
+    .image-upload-area:hover {
+      border-color: var(--accent-cyan);
+      background: rgba(0, 212, 255, 0.05);
+    }
+
+    .image-preview-grid {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 1rem;
+      margin-top: 1rem;
+    }
+
+    .image-preview {
+      aspect-ratio: 1;
+      border-radius: 12px;
+      overflow: hidden;
+      position: relative;
+    }
+
+    .image-preview img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    /* Notifications Dropdown */
+    .notifications-dropdown {
+      position: absolute;
+      top: 100%;
+      right: 0;
+      width: 350px;
+      background: var(--bg-secondary);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      margin-top: 0.5rem;
+      opacity: 0;
+      visibility: hidden;
+      transform: translateY(-10px);
+      transition: all 0.3s ease;
+      z-index: 100;
+      max-height: 400px;
+      overflow: hidden;
+    }
+
+    .notifications-dropdown.active {
+      opacity: 1;
+      visibility: visible;
+      transform: translateY(0);
+    }
+
+    .notification-item {
+      padding: 1rem;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      gap: 0.75rem;
+      transition: background 0.3s ease;
+      position: relative;
+    }
+
+    .notification-item:hover {
+      background: var(--glass);
+    }
+
+    .notification-delete {
+      position: absolute;
+      top: 0.5rem;
+      right: 0.5rem;
+      width: 24px;
+      height: 24px;
+      background: transparent;
+      border: none;
+      color: var(--fg-muted);
+      cursor: pointer;
+      opacity: 0;
+      transition: all 0.3s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 4px;
+    }
+
+    .notification-item:hover .notification-delete {
+      opacity: 1;
+    }
+
+    .notification-delete:hover {
+      color: var(--accent-magenta);
+      background: rgba(255, 0, 80, 0.1);
+    }
+
+    .notification-icon {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
+    .empty-notifications {
+      padding: 3rem;
+      text-align: center;
+      color: var(--fg-muted);
+    }
+
+    /* Messages */
+    .messages-container {
+      display: grid;
+      grid-template-columns: 300px 1fr;
+      gap: 1rem;
+      min-height: 500px;
+    }
+
+    @media (max-width: 768px) {
+      .messages-container {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .conversations-list {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      overflow: hidden;
+    }
+
+    .conversation-item {
+      padding: 1rem;
+      border-bottom: 1px solid var(--border);
+      cursor: pointer;
+      transition: background 0.3s ease;
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+
+    .conversation-item:hover,
+    .conversation-item.active {
+      background: var(--glass);
+    }
+
+    .chat-area {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .chat-messages {
+      flex: 1;
+      padding: 1rem;
+      overflow-y: auto;
+      min-height: 300px;
+    }
+
+    .message {
+      margin-bottom: 1rem;
+      max-width: 70%;
+    }
+
+    .message.sent {
+      margin-left: auto;
+    }
+
+    .message-bubble {
+      padding: 0.75rem 1rem;
+      border-radius: 16px;
+      background: var(--glass);
+    }
+
+    .message.sent .message-bubble {
+      background: linear-gradient(135deg, var(--accent-cyan), var(--accent-magenta));
+    }
+
+    .chat-input {
+      padding: 1rem;
+      border-top: 1px solid var(--border);
+      display: flex;
+      gap: 0.5rem;
+    }
+
+    /* Seller Avatar in Listings */
+    .seller-profile-link {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      cursor: pointer;
+      transition: color 0.3s ease;
+    }
+
+    .seller-profile-link:hover {
+      color: var(--accent-cyan);
+    }
+
+    /* Reduced Motion */
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+      }
+    }
+
+    /* Scrollbar */
+    ::-webkit-scrollbar {
+      width: 8px;
+    }
+
+    ::-webkit-scrollbar-track {
+      background: var(--bg-primary);
+    }
+
+    ::-webkit-scrollbar-thumb {
+      background: var(--border);
+      border-radius: 4px;
+    }
+
+    ::-webkit-scrollbar-thumb:hover {
+      background: var(--accent-cyan);
+    }
+  </style>
+</head>
+<body>
+  <!-- Animated Background -->
+  <div id="animated-bg"></div>
+
+  <!-- Landing Screen -->
+  <div id="landing-screen">
+    <div class="landing-content">
+      <h1 class="landing-title">This Website Owner is Abdullah Sajjad</h1>
+      <p style="color: var(--fg-muted); margin-top: 1rem; opacity: 0; animation: revealText 1s ease 2s forwards;">Welcome to MarketVerse - The Future of Trading</p>
+      <button class="enter-btn" onclick="enterSite()">Enter Marketplace</button>
+    </div>
+  </div>
+
+  <!-- Navigation -->
+  <nav id="main-nav">
+    <div class="nav-container">
+      <div class="logo" onclick="showPage('home')">MarketVerse</div>
+      
+      <button class="mobile-menu-btn" onclick="toggleMobileMenu()" aria-label="Toggle menu">
+        <span></span>
+        <span></span>
+        <span></span>
+      </button>
+
+      <ul class="nav-links" id="nav-links">
+        <li><a href="#" class="nav-link active" data-page="home">Home</a></li>
+        <li><a href="#" class="nav-link" data-page="browse">Browse Listings</a></li>
+        <li><a href="#" class="nav-link" data-page="create">Create Listing</a></li>
+        <li><a href="#" class="nav-link" data-page="messages">Messages</a></li>
+        <li><a href="#" class="nav-link" data-page="help">Help</a></li>
+      </ul>
+
+      <div class="nav-right">
+        <div class="theme-toggle" onclick="toggleTheme()" title="Toggle Theme" role="button" aria-label="Toggle theme"></div>
+        
+        <div class="notification-btn" onclick="toggleNotifications()" role="button" aria-label="Notifications">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
+            <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
+          </svg>
+          <span class="notification-badge" id="notif-badge">3</span>
+          
+          <div class="notifications-dropdown" id="notif-dropdown">
+            <div style="padding: 1rem; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center;">
+              <strong>Notifications</strong>
+              <button onclick="clearAllNotifications()" style="font-size: 0.8rem; color: var(--accent-magenta); background: none; border: none; cursor: pointer;">Clear All</button>
+            </div>
+            <div id="notifications-list"></div>
+          </div>
+        </div>
+
+        <div class="user-avatar" onclick="handleUserClick()" id="user-avatar" role="button" aria-label="User menu">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+            <circle cx="12" cy="7" r="4"/>
+          </svg>
+        </div>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Main Content -->
+  <div id="main-content">
+    <!-- Home Page -->
+    <section id="page-home" class="page-section">
+      <div style="max-width: 1400px; margin: 0 auto;">
+        <!-- Hero -->
+        <div style="text-align: center; padding: 4rem 0;">
+          <h1 style="font-family: 'Syne', sans-serif; font-size: clamp(2rem, 6vw, 4rem); font-weight: 800; margin-bottom: 1rem;">
+            Discover, Trade, <span style="background: linear-gradient(90deg, var(--accent-cyan), var(--accent-magenta)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;">Thrive</span>
+          </h1>
+          <p style="color: var(--fg-muted); font-size: 1.2rem; max-width: 600px; margin: 0 auto 2rem;">
+            The modern marketplace for buying and selling anything. Safe, fast, and beautiful.
+          </p>
+
+          <!-- Search -->
+          <div class="search-container fade-in stagger-1">
+            <div class="search-box">
+              <input type="text" class="search-input" placeholder="What are you looking for?" id="search-input">
+              <select class="search-select" id="category-filter">
+                <option value="">All Categories</option>
+              </select>
+              <button class="search-btn" onclick="searchListings()">Search</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Categories -->
+        <div style="margin-bottom: 3rem;">
+          <h2 style="font-size: 1.5rem; font-weight: 600; margin-bottom: 1.5rem;">Browse Categories</h2>
+          <div class="category-grid" id="categories-grid"></div>
+        </div>
+
+        <!-- Recent Listings -->
+        <div>
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+            <h2 style="font-size: 1.5rem; font-weight: 600;">Recent Listings</h2>
+            <button class="btn-secondary" onclick="showPage('browse')">View All</button>
+          </div>
+          <div class="listings-grid" id="listings-grid"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Browse Page -->
+    <section id="page-browse" class="page-section" style="display: none;">
+      <div style="max-width: 1400px; margin: 0 auto;">
+        <h1 style="font-family: 'Syne', sans-serif; font-size: 2.5rem; font-weight: 700; margin-bottom: 2rem;">Browse Listings</h1>
+        
+        <!-- Filters -->
+        <div class="glass-card" style="margin-bottom: 2rem;">
+          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem;">
+            <div>
+              <label class="form-label">Category</label>
+              <select class="form-input" id="filter-category" onchange="applyFilters()">
+                <option value="">All Categories</option>
+              </select>
+            </div>
+            <div>
+              <label class="form-label">Price Range</label>
+              <select class="form-input" id="filter-price" onchange="applyFilters()">
+                <option value="">Any Price</option>
+                <option value="0-50">Under $50</option>
+                <option value="50-100">$50 - $100</option>
+                <option value="100-500">$100 - $500</option>
+                <option value="500-1000">$500 - $1000</option>
+                <option value="1000+">Over $1000</option>
+              </select>
+            </div>
+            <div>
+              <label class="form-label">Condition</label>
+              <select class="form-input" id="filter-condition" onchange="applyFilters()">
+                <option value="">Any Condition</option>
+                <option value="new">New</option>
+                <option value="used">Used</option>
+              </select>
+            </div>
+            <div>
+              <label class="form-label">Location</label>
+              <input type="text" class="form-input" placeholder="Enter location" id="filter-location" onkeyup="applyFilters()">
+            </div>
+          </div>
+        </div>
+
+        <div class="listings-grid" id="browse-listings-grid"></div>
+      </div>
+    </section>
+
+    <!-- Create Listing Page -->
+    <section id="page-create" class="page-section" style="display: none;">
+      <div style="max-width: 800px; margin: 0 auto;">
+        <h1 style="font-family: 'Syne', sans-serif; font-size: 2.5rem; font-weight: 700; margin-bottom: 2rem;">Create New Listing</h1>
+        
+        <div class="glass-card">
+          <form id="create-listing-form">
+            <div class="form-group">
+              <label class="form-label">Listing Title</label>
+              <input type="text" class="form-input" placeholder="What are you selling?" id="listing-title" required>
+            </div>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+              <div class="form-group">
+                <label class="form-label">Category</label>
+                <select class="form-input" id="listing-category" required>
+                  <option value="">Select Category</option>
+                </select>
+              </div>
+
+              <div class="form-group">
+                <label class="form-label">Price ($)</label>
+                <input type="number" class="form-input" placeholder="0.00" id="listing-price" required>
+              </div>
+            </div>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+              <div class="form-group">
+                <label class="form-label">Condition</label>
+                <select class="form-input" id="listing-condition" required>
+                  <option value="new">New</option>
+                  <option value="used">Used</option>
+                </select>
+              </div>
+
+              <div class="form-group">
+                <label class="form-label">Location</label>
+                <input type="text" class="form-input" placeholder="City, Country" id="listing-location" required>
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">Description</label>
+              <textarea class="form-input" rows="4" placeholder="Describe your item in detail..." id="listing-description" required></textarea>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">Images (up to 5)</label>
+              <div class="image-upload-area" onclick="document.getElementById('image-input').click()">
+                <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" style="margin: 0 auto 1rem; display: block; color: var(--fg-muted);">
+                  <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
+                  <circle cx="8.5" cy="8.5" r="1.5"/>
+                  <polyline points="21,15 16,10 5,21"/>
+                </svg>
+                <p style="color: var(--fg-muted);">Click to upload images</p>
+              </div>
+              <input type="file" id="image-input" accept="image/*" multiple style="display: none;" onchange="handleImageUpload(event)">
+              <div class="image-preview-grid" id="image-previews"></div>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">Contact Preference</label>
+              <div style="display: flex; gap: 1rem;">
+                <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer;">
+                  <input type="checkbox" checked id="contact-message"> Messages
+                </label>
+                <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer;">
+                  <input type="checkbox" id="contact-phone"> Phone
+                </label>
+              </div>
+            </div>
+
+            <button type="submit" class="btn-primary" style="width: 100%;">Create Listing</button>
+          </form>
+        </div>
+      </div>
+    </section>
+
+    <!-- Messages Page -->
+    <section id="page-messages" class="page-section" style="display: none;">
+      <div style="max-width: 1200px; margin: 0 auto;">
+        <h1 style="font-family: 'Syne', sans-serif; font-size: 2.5rem; font-weight: 700; margin-bottom: 2rem;">Messages</h1>
+        
+        <div class="messages-container">
+          <div class="conversations-list">
+            <div style="padding: 1rem; border-bottom: 1px solid var(--border);">
+              <strong>Conversations</strong>
+            </div>
+            <div id="conversations-list"></div>
+          </div>
+          
+          <div class="chat-area">
+            <div style="padding: 1rem; border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 0.75rem;">
+              <div class="user-avatar" id="chat-avatar" style="width: 36px; height: 36px; font-size: 0.9rem;"></div>
+              <strong id="chat-with">Select a conversation</strong>
+            </div>
+            <div class="chat-messages" id="chat-messages">
+              <p style="color: var(--fg-muted); text-align: center; margin-top: 50%;">Select a conversation to start messaging</p>
+            </div>
+            <div class="chat-input">
+              <input type="text" class="form-input" placeholder="Type a message..." id="message-input" onkeypress="if(event.key==='Enter')sendMessage()">
+              <button class="btn-primary" onclick="sendMessage()">Send</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Dashboard Page -->
+    <section id="page-dashboard" class="page-section" style="display: none;">
+      <div style="max-width: 1400px; margin: 0 auto;">
+        <h1 style="font-family: 'Syne', sans-serif; font-size: 2.5rem; font-weight: 700; margin-bottom: 2rem;">My Dashboard</h1>
+        
+        <!-- Profile Header -->
+        <div class="profile-header">
+          <div class="profile-avatar-container">
+            <div class="profile-avatar" id="profile-avatar">
+              <span id="profile-avatar-initial">U</span>
+            </div>
+            <label class="profile-avatar-edit" title="Change profile picture">
+              <input type="file" id="profile-picture-input" accept="image/*" style="display: none;" onchange="handleProfilePictureUpload(event)">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2">
+                <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/>
+                <circle cx="12" cy="13" r="4"/>
+              </svg>
+            </label>
+          </div>
+          <div class="profile-info">
+            <h2 id="profile-name">Guest User</h2>
+            <p id="profile-email">Please login to view your profile</p>
+            <div class="profile-stats">
+              <div class="profile-stat">
+                <div class="profile-stat-value" id="stat-listings">0</div>
+                <div class="profile-stat-label">Listings</div>
+              </div>
+              <div class="profile-stat">
+                <div class="profile-stat-value" id="stat-views">0</div>
+                <div class="profile-stat-label">Views</div>
+              </div>
+              <div class="profile-stat">
+                <div class="profile-stat-value" id="stat-favorites">0</div>
+                <div class="profile-stat-label">Favorites</div>
+              </div>
+            </div>
+          </div>
+          <div style="margin-left: auto;">
+            <button class="btn-secondary" onclick="showEditProfileModal()">Edit Profile</button>
+          </div>
+        </div>
+
+        <div class="dashboard-grid">
+          <div class="stat-card fade-in stagger-1">
+            <div class="stat-value" id="stat-messages">0</div>
+            <div class="stat-label">Messages</div>
+          </div>
+          <div class="stat-card fade-in stagger-2">
+            <div class="stat-value" id="stat-notifications">0</div>
+            <div class="stat-label">Notifications</div>
+          </div>
+          <div class="stat-card fade-in stagger-3">
+            <div class="stat-value" id="stat-sold">0</div>
+            <div class="stat-label">Items Sold</div>
+          </div>
+          <div class="stat-card fade-in stagger-4">
+            <div class="stat-value" id="stat-rating">4.8</div>
+            <div class="stat-label">Rating</div>
+          </div>
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem;">
+          <div class="glass-card">
+            <h3 style="font-weight: 600; margin-bottom: 1rem;">My Listings</h3>
+            <div id="my-listings"></div>
+          </div>
+          <div class="glass-card">
+            <h3 style="font-weight: 600; margin-bottom: 1rem;">Saved Items</h3>
+            <div id="saved-items"></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Help Page -->
+    <section id="page-help" class="page-section" style="display: none;">
+      <div style="max-width: 800px; margin: 0 auto;">
+        <h1 style="font-family: 'Syne', sans-serif; font-size: 2.5rem; font-weight: 700; margin-bottom: 2rem;">Help & Support</h1>
+        
+        <div class="glass-card" style="margin-bottom: 1.5rem;">
+          <h3 style="font-weight: 600; margin-bottom: 1rem;">Frequently Asked Questions</h3>
+          <div style="color: var(--fg-muted);">
+            <p style="margin-bottom: 1rem;"><strong style="color: var(--fg);">How do I create a listing?</strong><br>Click on "Create Listing" in the navigation menu and fill out the form with your item details.</p>
+            <p style="margin-bottom: 1rem;"><strong style="color: var(--fg);">How do I message a seller?</strong><br>Click on any listing and use the message box to contact the seller directly.</p>
+            <p><strong style="color: var(--fg);">Is my payment secure?</strong><br>All transactions are handled securely. We never store your payment information.</p>
+          </div>
+        </div>
+
+        <div class="glass-card">
+          <h3 style="font-weight: 600; margin-bottom: 1rem;">Contact Support</h3>
+          <form>
+            <div class="form-group">
+              <label class="form-label">Your Email</label>
+              <input type="email" class="form-input" placeholder="your@email.com">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Message</label>
+              <textarea class="form-input" rows="4" placeholder="How can we help?"></textarea>
+            </div>
+            <button type="button" class="btn-primary">Send Message</button>
+          </form>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <!-- Auth Modal -->
+  <div class="modal-overlay" id="auth-modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3 class="modal-title" id="auth-title">Login</h3>
+        <button class="modal-close" onclick="closeModal('auth-modal')" aria-label="Close">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="18" y1="6" x2="6" y2="18"></line>
+            <line x1="6" y1="6" x2="18" y2="18"></line>
+          </svg>
+        </button>
+      </div>
+      <div class="modal-body">
+        <!-- Login Form -->
+        <form id="login-form">
+          <div class="form-group">
+            <label class="form-label">Email</label>
+            <input type="email" class="form-input" placeholder="your@email.com" id="login-email" required>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Password</label>
+            <input type="password" class="form-input" placeholder="Enter password" id="login-password" required>
+          </div>
+          <button type="submit" class="btn-primary" style="width: 100%;">Login</button>
+          <p style="text-align: center; margin-top: 1rem; color: var(--fg-muted);">
+            Don't have an account? <a href="#" onclick="toggleAuthForm()" style="color: var(--accent-cyan);">Register</a>
+          </p>
+        </form>
+
+        <!-- Register Form -->
+        <form id="register-form" style="display: none;">
+          <div class="form-group">
+            <label class="form-label">Full Name</label>
+            <input type="text" class="form-input" placeholder="John Doe" id="register-name" required>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Email</label>
+            <input type="email" class="form-input" placeholder="your@email.com" id="register-email" required>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Password</label>
+            <input type="password" class="form-input" placeholder="Create password" id="register-password" required>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Confirm Password</label>
+            <input type="password" class="form-input" placeholder="Confirm password" id="register-confirm" required>
+          </div>
+          <button type="submit" class="btn-primary" style="width: 100%;">Create Account</button>
+          <p style="text-align: center; margin-top: 1rem; color: var(--fg-muted);">
+            Already have an account? <a href="#" onclick="toggleAuthForm()" style="color: var(--accent-cyan);">Login</a>
+          </p>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- Edit Profile Modal -->
+  <div class="modal-overlay" id="edit-profile-modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3 class="modal-title">Edit Profile</h3>
+        <button class="modal-close" onclick="closeModal('edit-profile-modal')" aria-label="Close">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="18" y1="6" x2="6" y2="18"></line>
+            <line x1="6" y1="6" x2="18" y2="18"></line>
+          </svg>
+        </button>
+      </div>
+      <div class="modal-body">
+        <form id="edit-profile-form">
+          <div style="text-align: center; margin-bottom: 1.5rem;">
+            <div class="profile-avatar" style="width: 100px; height: 100px; margin: 0 auto; font-size: 2.5rem;" id="edit-profile-avatar">
+              <span id="edit-avatar-initial">U</span>
+            </div>
+            <label style="display: inline-block; margin-top: 1rem; padding: 0.5rem 1rem; background: var(--glass); border: 1px solid var(--border); border-radius: 8px; cursor: pointer; transition: all 0.3s ease;">
+              <input type="file" id="edit-profile-picture" accept="image/*" style="display: none;" onchange="handleEditProfilePicture(event)">
+              Change Picture
+            </label>
+          </div>
+          
+          <div class="form-group">
+            <label class="form-label">Full Name</label>
+            <input type="text" class="form-input" id="edit-name" required>
+          </div>
+          
+          <div class="form-group">
+            <label class="form-label">Email</label>
+            <input type="email" class="form-input" id="edit-email" required>
+          </div>
+          
+          <div class="form-group">
+            <label class="form-label">Phone (optional)</label>
+            <input type="tel" class="form-input" id="edit-phone" placeholder="+1 234 567 8900">
+          </div>
+          
+          <div class="form-group">
+            <label class="form-label">Location</label>
+            <input type="text" class="form-input" id="edit-location" placeholder="City, Country">
+          </div>
+          
+          <div class="form-group">
+            <label class="form-label">Bio</label>
+            <textarea class="form-input" id="edit-bio" rows="3" placeholder="Tell us about yourself..."></textarea>
+          </div>
+          
+          <div style="display: flex; gap: 1rem;">
+            <button type="submit" class="btn-primary" style="flex: 1;">Save Changes</button>
+            <button type="button" class="btn-secondary" onclick="closeModal('edit-profile-modal')">Cancel</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- Listing Detail Modal -->
+  <div class="modal-overlay" id="listing-modal">
+    <div class="modal-content" style="max-width: 900px;">
+      <div class="modal-header">
+        <h3 class="modal-title" id="listing-modal-title">Listing Details</h3>
+        <button class="modal-close" onclick="closeModal('listing-modal')" aria-label="Close">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="18" y1="6" x2="6" y2="18"></line>
+            <line x1="6" y1="6" x2="18" y2="18"></line>
+          </svg>
+        </button>
+      </div>
+      <div class="modal-body" id="listing-modal-content"></div>
+    </div>
+  </div>
+
+  <!-- User Profile Modal (for viewing other users) -->
+  <div class="modal-overlay" id="user-profile-modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3 class="modal-title">Seller Profile</h3>
+        <button class="modal-close" onclick="closeModal('user-profile-modal')" aria-label="Close">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="18" y1="6" x2="6" y2="18"></line>
+            <line x1="6" y1="6" x2="18" y2="18"></line>
+          </svg>
+        </button>
+      </div>
+      <div class="modal-body" id="user-profile-content"></div>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <footer id="footer" style="display: none;">
+    <div class="footer-grid">
+      <div>
+        <h3 class="footer-title">MarketVerse</h3>
+        <p style="color: var(--fg-muted); font-size: 0.9rem;">The modern marketplace for buying and selling anything. Safe, fast, and beautiful.</p>
+        <div class="social-links">
+          <a href="#" class="social-link" aria-label="Facebook">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"/>
+            </svg>
+          </a>
+          <a href="#" class="social-link" aria-label="Instagram">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <rect x="2" y="2" width="20" height="20" rx="5" ry="5"/>
+              <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/>
+              <line x1="17.5" y1="6.5" x2="17.51" y2="6.5"/>
+            </svg>
+          </a>
+          <a href="#" class="social-link" aria-label="Twitter">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M23 3a10.9 10.9 0 0 1-3.14 1.53 4.48 4.48 0 0 0-7.86 3v1A10.66 10.66 0 0 1 3 4s-4 9 5 13a11.64 11.64 0 0 1-7 2c9 5 20 0 20-11.5a4.5 4.5 0 0 0-.08-.83A7.72 7.72 0 0 0 23 3z"/>
+            </svg>
+          </a>
+          <a href="#" class="social-link" aria-label="YouTube">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M22.54 6.42a2.78 2.78 0 0 0-1.94-2C18.88 4 12 4 12 4s-6.88 0-8.6.46a2.78 2.78 0 0 0-1.94 2A29 29 0 0 0 1 11.75a29 29 0 0 0 .46 5.33A2.78 2.78 0 0 0 3.4 19c1.72.46 8.6.46 8.6.46s6.88 0 8.6-.46a2.78 2.78 0 0 0 1.94-2 29 29 0 0 0 .46-5.25 29 29 0 0 0-.46-5.33z"/>
+              <polygon points="9.75 15.02 15.5 11.75 9.75 8.48 9.75 15.02"/>
+            </svg>
+          </a>
+        </div>
+      </div>
+      <div>
+        <h4 class="footer-title">Quick Links</h4>
+        <ul class="footer-links">
+          <li><a href="#" onclick="showPage('home')">Home</a></li>
+          <li><a href="#" onclick="showPage('browse')">Browse Listings</a></li>
+          <li><a href="#" onclick="showPage('create')">Create Listing</a></li>
+          <li><a href="#" onclick="showPage('help')">Help & Support</a></li>
+        </ul>
+      </div>
+      <div>
+        <h4 class="footer-title">Categories</h4>
+        <ul class="footer-links">
+          <li><a href="#" onclick="filterByCategory('electronics')">Electronics</a></li>
+          <li><a href="#" onclick="filterByCategory('phones')">Mobile Phones</a></li>
+          <li><a href="#" onclick="filterByCategory('cars')">Cars</a></li>
+          <li><a href="#" onclick="filterByCategory('furniture')">Furniture</a></li>
+        </ul>
+      </div>
+      <div>
+        <h4 class="footer-title">Legal</h4>
+        <ul class="footer-links">
+          <li><a href="#">Privacy Policy</a></li>
+          <li><a href="#">Terms of Service</a></li>
+          <li><a href="#">Cookie Policy</a></li>
+          <li><a href="#">Contact Us</a></li>
+        </ul>
+      </div>
+    </div>
+    <div style="text-align: center; padding-top: 2rem; margin-top: 2rem; border-top: 1px solid var(--border); color: var(--fg-muted); font-size: 0.9rem;">
+      2024 MarketVerse. All rights reserved. Website by Abdullah Sajjad.
+    </div>
+  </footer>
+
+  <script>
+    // ==================== DATA ====================
+    const categories = [
+      { id: 'electronics', name: 'Electronics', icon: '💻', count: 156 },
+      { id: 'phones', name: 'Mobile Phones', icon: '📱', count: 89 },
+      { id: 'cars', name: 'Cars', icon: '🚗', count: 45 },
+      { id: 'motorcycles', name: 'Motorcycles', icon: '🏍️', count: 23 },
+      { id: 'furniture', name: 'Furniture', icon: '🛋️', count: 78 },
+      { id: 'clothing', name: 'Clothing', icon: '👕', count: 234 },
+      { id: 'books', name: 'Books', icon: '📚', count: 167 },
+      { id: 'gaming', name: 'Gaming', icon: '🎮', count: 92 },
+      { id: 'appliances', name: 'Home Appliances', icon: '🏠', count: 56 },
+      { id: 'other', name: 'Other', icon: '📦', count: 189 }
+    ];
+
+    let listings = [
+      { id: 1, title: 'MacBook Pro 14" M3 Pro', price: 1899, category: 'electronics', condition: 'new', location: 'New York, USA', description: 'Brand new MacBook Pro with M3 Pro chip. 18GB RAM, 512GB SSD. Includes original charger and box.', seller: 'TechStore', sellerId: 1, views: 234, date: '2024-01-15', favorites: 12 },
+      { id: 2, title: 'iPhone 15 Pro Max 256GB', price: 1099, category: 'phones', condition: 'used', location: 'Los Angeles, USA', description: 'Excellent condition iPhone 15 Pro Max. Battery health 98%. Includes case and screen protector.', seller: 'MobileDeals', sellerId: 2, views: 567, date: '2024-01-14', favorites: 28 },
+      { id: 3, title: 'Toyota Camry 2022', price: 24500, category: 'cars', condition: 'used', location: 'Chicago, USA', description: 'Well maintained 2022 Toyota Camry. 35,000 miles. Clean title, no accidents. Silver exterior, black interior.', seller: 'AutoSales', sellerId: 3, views: 189, date: '2024-01-13', favorites: 8 },
+      { id: 4, title: 'Modern Sectional Sofa', price: 899, category: 'furniture', condition: 'new', location: 'Miami, USA', description: 'Brand new L-shaped sectional sofa. Gray fabric, seats 6 people. Easy assembly required.', seller: 'HomeStyle', sellerId: 4, views: 345, date: '2024-01-12', favorites: 15 },
+      { id: 5, title: 'PS5 Digital Edition', price: 399, category: 'gaming', condition: 'used', location: 'Seattle, USA', description: 'PlayStation 5 Digital Edition in excellent condition. Includes one controller and 3 games.', seller: 'GamerZone', sellerId: 5, views: 678, date: '2024-01-11', favorites: 45 },
+      { id: 6, title: 'Samsung 65" 4K Smart TV', price: 799, category: 'electronics', condition: 'new', location: 'Boston, USA', description: 'Brand new Samsung 65-inch 4K Smart TV. HDR, Dolby Vision, built-in streaming apps.', seller: 'TechStore', sellerId: 1, views: 412, date: '2024-01-10', favorites: 22 },
+      { id: 7, title: 'Herman Miller Aeron Chair', price: 650, category: 'furniture', condition: 'used', location: 'San Francisco, USA', description: 'Ergonomic office chair in good condition. Adjustable armrests, lumbar support, breathable mesh.', seller: 'OfficePro', sellerId: 6, views: 234, date: '2024-01-09', favorites: 18 },
+      { id: 8, title: 'Dyson V15 Vacuum', price: 449, category: 'appliances', condition: 'new', location: 'Denver, USA', description: 'Brand new Dyson V15 Detect vacuum. Laser dust detection, LCD screen showing dust analysis.', seller: 'HomeAppliances', sellerId: 7, views: 156, date: '2024-01-08', favorites: 9 }
+    ];
+
+    let users = JSON.parse(localStorage.getItem('marketverse_users')) || [];
+    let currentUser = JSON.parse(localStorage.getItem('marketverse_currentUser')) || null;
+    let favorites = JSON.parse(localStorage.getItem('marketverse_favorites')) || [];
+    let conversations = JSON.parse(localStorage.getItem('marketverse_conversations')) || [];
+    let notifications = JSON.parse(localStorage.getItem('marketverse_notifications')) || [
+      { id: 1, type: 'message', text: 'New message from TechStore about MacBook Pro', time: '2 min ago' },
+      { id: 2, type: 'view', text: 'Your iPhone listing got 50 new views', time: '1 hour ago' },
+      { id: 3, type: 'favorite', text: 'Someone saved your PS5 listing', time: '3 hours ago' }
+    ];
+
+    // ==================== INITIALIZATION ====================
+    let uploadedImages = [];
+    let tempProfilePicture = null;
+
+    document.addEventListener('DOMContentLoaded', () => {
+      initAnimatedBackground();
+      populateCategoryDropdowns();
+      renderCategories();
+      renderListings();
+      renderNotifications();
+      checkLoggedIn();
+    });
+
+    function initAnimatedBackground() {
+      const bg = document.getElementById('animated-bg');
+      
+      // Create stars
+      for (let i = 0; i < 100; i++) {
+        const star = document.createElement('div');
+        star.className = 'star';
+        const size = Math.random() * 3 + 1;
+        const tx = (Math.random() - 0.5) * 100;
+        const ty = (Math.random() - 0.5) * 100;
+        star.style.cssText = `
+          width: ${size}px;
+          height: ${size}px;
+          left: ${Math.random() * 100}%;
+          top: ${Math.random() * 100}%;
+          background: ${['#00d4ff', '#ff0080', '#ffd700', '#ffffff'][Math.floor(Math.random() * 4)]};
+          --tx: ${tx}px;
+          --ty: ${ty}px;
+          animation-duration: ${Math.random() * 5 + 5}s;
+          animation-delay: ${Math.random() * 5}s;
+        `;
+        bg.appendChild(star);
+      }
+
+      // Create geometric shapes
+      const shapes = ['decagon', 'hexagon', 'pentagon', 'circle', 'triangle'];
+      for (let i = 0; i < 15; i++) {
+        const shape = document.createElement('div');
+        shape.className = 'geo-shape';
+        const shapeType = shapes[Math.floor(Math.random() * shapes.length)];
+        const size = Math.random() * 80 + 40;
+        
+        let clipPath = '';
+        switch (shapeType) {
+          case 'decagon': clipPath = 'polygon(50% 0%, 80% 10%, 100% 35%, 100% 70%, 80% 90%, 50% 100%, 20% 90%, 0% 70%, 0% 35%, 20% 10%)'; break;
+          case 'hexagon': clipPath = 'polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%)'; break;
+          case 'pentagon': clipPath = 'polygon(50% 0%, 100% 38%, 82% 100%, 18% 100%, 0% 38%)'; break;
+          case 'circle': clipPath = 'circle(50%)'; break;
+          case 'triangle': clipPath = 'polygon(50% 0%, 0% 100%, 100% 100%)'; break;
+        }
+
+        shape.style.cssText = `
+          width: ${size}px;
+          height: ${size}px;
+          left: ${Math.random() * 100}%;
+          top: ${Math.random() * 100}%;
+          background: linear-gradient(135deg, ${['rgba(0,212,255,0.3)', 'rgba(255,0,128,0.3)', 'rgba(255,215,0,0.3)'][Math.floor(Math.random() * 3)]}, transparent);
+          clip-path: ${clipPath};
+          animation-delay: ${Math.random() * 10}s;
+          animation-duration: ${Math.random() * 20 + 15}s;
+        `;
+        bg.appendChild(shape);
+      }
+
+      // Create particles
+      for (let i = 0; i < 30; i++) {
+        const particle = document.createElement('div');
+        particle.className = 'particle';
+        const size = Math.random() * 4 + 2;
+        particle.style.cssText = `
+          width: ${size}px;
+          height: ${size}px;
+          left: ${Math.random() * 100}%;
+          background: ${['rgba(0,212,255,0.6)', 'rgba(255,0,128,0.6)', 'rgba(255,215,0,0.6)'][Math.floor(Math.random() * 3)]};
+          animation-delay: ${Math.random() * 15}s;
+          animation-duration: ${Math.random() * 10 + 10}s;
+        `;
+        bg.appendChild(particle);
+      }
+    }
+
+    function populateCategoryDropdowns() {
+      const categoryOptions = categories.map(cat => `<option value="${cat.id}">${cat.name}</option>`).join('');
+      
+      document.getElementById('category-filter').innerHTML = '<option value="">All Categories</option>' + categoryOptions;
+      document.getElementById('filter-category').innerHTML = '<option value="">All Categories</option>' + categoryOptions;
+      document.getElementById('listing-category').innerHTML = '<option value="">Select Category</option>' + categoryOptions;
+    }
+
+    function enterSite() {
+      document.getElementById('landing-screen').classList.add('hidden');
+      document.getElementById('main-nav').classList.add('visible');
+      document.getElementById('main-content').classList.add('visible');
+      document.getElementById('footer').style.display = 'block';
+    }
+
+    // ==================== NAVIGATION ====================
+    function showPage(pageId) {
+      document.querySelectorAll('.page-section').forEach(section => {
+        section.style.display = 'none';
+      });
+      const targetPage = document.getElementById(`page-${pageId}`);
+      if (targetPage) {
+        targetPage.style.display = 'block';
+      }
+
+      document.querySelectorAll('.nav-link').forEach(link => {
+        link.classList.remove('active');
+        if (link.dataset.page === pageId) {
+          link.classList.add('active');
+        }
+      });
+
+      if (pageId === 'browse') {
+        renderBrowseListings();
+      }
+      if (pageId === 'messages') {
+        renderConversations();
+      }
+      if (pageId === 'dashboard') {
+        if (!currentUser) {
+          showAuthModal();
+          return;
+        }
+        renderDashboard();
+      }
+
+      // Close mobile menu
+      document.getElementById('nav-links').classList.remove('mobile-open');
+      
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    function toggleMobileMenu() {
+      document.getElementById('nav-links').classList.toggle('mobile-open');
+    }
+
+    // ==================== RENDER FUNCTIONS ====================
+    function renderCategories() {
+      const grid = document.getElementById('categories-grid');
+      grid.innerHTML = categories.map(cat => `
+        <div class="category-card" onclick="filterByCategory('${cat.id}')">
+          <div class="category-icon">${cat.icon}</div>
+          <div class="category-name">${cat.name}</div>
+          <div class="category-count">${cat.count} items</div>
+        </div>
+      `).join('');
+    }
+
+    function renderListings() {
+      const grid = document.getElementById('listings-grid');
+      grid.innerHTML = listings.slice(0, 8).map(listing => createListingCard(listing)).join('');
+    }
+
+    function renderBrowseListings() {
+      const grid = document.getElementById('browse-listings-grid');
+      grid.innerHTML = listings.map(listing => createListingCard(listing)).join('');
+    }
+
+    function getUserAvatar(sellerName) {
+      const user = users.find(u => u.name === sellerName);
+      if (user && user.profilePicture) {
+        return `<img src="${user.profilePicture}" alt="${sellerName}">`;
+      }
+      return sellerName[0].toUpperCase();
+    }
+
+    function createListingCard(listing) {
+      const isFav = favorites.includes(listing.id);
+      const category = categories.find(c => c.id === listing.category);
+      const avatarContent = getUserAvatar(listing.seller);
+      
+      return `
+        <div class="listing-card" onclick="showListingDetail(${listing.id})">
+          <div class="listing-image">
+            <div style="font-size: 4rem;">${category?.icon || '📦'}</div>
+            <button class="favorite-btn ${isFav ? 'active' : ''}" onclick="event.stopPropagation(); toggleFavorite(${listing.id})" aria-label="Add to favorites">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="${isFav ? 'currentColor' : 'none'}" stroke="currentColor" stroke-width="2">
+                <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
+              </svg>
+            </button>
+          </div>
+          <div class="listing-content">
+            <div class="listing-title">${listing.title}</div>
+            <div class="listing-price">$${listing.price.toLocaleString()}</div>
+            <div class="listing-meta">
+              <span>${listing.location}</span>
+              <span>${listing.condition}</span>
+            </div>
+            <div class="listing-seller">
+              <div class="listing-seller-avatar">${avatarContent}</div>
+              <span class="seller-profile-link" onclick="event.stopPropagation(); viewUserProfile('${listing.seller}')">${listing.seller}</span>
+            </div>
+          </div>
+        </div>
+      `;
+    }
+
+    function renderNotifications() {
+      const list = document.getElementById('notifications-list');
+      const badge = document.getElementById('notif-badge');
+      
+      if (notifications.length === 0) {
+        list.innerHTML = '<div class="empty-notifications">No notifications</div>';
+        badge.style.display = 'none';
+        return;
+      }
+      
+      badge.style.display = 'flex';
+      badge.textContent = notifications.length;
+      
+      list.innerHTML = notifications.map(notif => `
+        <div class="notification-item" data-id="${notif.id}">
+          <div class="notification-icon" style="background: ${notif.type === 'message' ? 'var(--accent-cyan)' : notif.type === 'view' ? 'var(--accent-gold)' : 'var(--accent-magenta)'};">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2">
+              ${notif.type === 'message' ? '<path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>' : 
+                notif.type === 'view' ? '<path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>' :
+                '<path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>'}
+            </svg>
+          </div>
+          <div style="flex: 1; padding-right: 1.5rem;">
+            <p style="font-size: 0.9rem;">${notif.text}</p>
+            <p style="font-size: 0.75rem; color: var(--fg-muted);">${notif.time}</p>
+          </div>
+          <button class="notification-delete" onclick="deleteNotification(${notif.id})" title="Delete notification">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <line x1="18" y1="6" x2="6" y2="18"></line>
+              <line x1="6" y1="6" x2="18" y2="18"></line>
+            </svg>
+          </button>
+        </div>
+      `).join('');
+    }
+
+    function deleteNotification(id) {
+      notifications = notifications.filter(n => n.id !== id);
+      localStorage.setItem('marketverse_notifications', JSON.stringify(notifications));
+      renderNotifications();
+    }
+
+    function clearAllNotifications() {
+      notifications = [];
+      localStorage.setItem('marketverse_notifications', JSON.stringify(notifications));
+      renderNotifications();
+    }
+
+    function renderConversations() {
+      const list = document.getElementById('conversations-list');
+      if (conversations.length === 0) {
+        list.innerHTML = '<div style="padding: 2rem; text-align: center; color: var(--fg-muted);">No conversations yet</div>';
+        return;
+      }
+      
+      list.innerHTML = conversations.map((conv, idx) => {
+        const avatarContent = getUserAvatar(conv.seller);
+        return `
+          <div class="conversation-item ${idx === 0 ? 'active' : ''}" onclick="selectConversation(${idx})">
+            <div class="user-avatar" style="width: 36px; height: 36px; font-size: 0.9rem;">${avatarContent}</div>
+            <div style="flex: 1; margin-left: 0.75rem;">
+              <div style="font-weight: 500;">${conv.seller}</div>
+              <div style="font-size: 0.8rem; color: var(--fg-muted);">${conv.messages[conv.messages.length - 1]?.text?.substring(0, 30) || 'Start chatting'}...</div>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function renderDashboard() {
+      if (!currentUser) return;
+      
+      const profileAvatar = document.getElementById('profile-avatar');
+      const profileInitial = document.getElementById('profile-avatar-initial');
+      
+      if (currentUser.profilePicture) {
+        profileInitial.style.display = 'none';
+        profileAvatar.innerHTML = `<img src="${currentUser.profilePicture}" alt="${currentUser.name}" style="width: 100%; height: 100%; object-fit: cover;">`;
+      } else {
+        profileInitial.style.display = 'block';
+        profileInitial.textContent = currentUser.name[0].toUpperCase();
+      }
+      
+      document.getElementById('profile-name').textContent = currentUser.name;
+      document.getElementById('profile-email').textContent = currentUser.email;
+      
+      document.getElementById('stat-listings').textContent = listings.filter(l => l.seller === currentUser.name).length;
+      document.getElementById('stat-messages').textContent = conversations.reduce((sum, c) => sum + c.messages.length, 0);
+      document.getElementById('stat-views').textContent = listings.filter(l => l.seller === currentUser.name).reduce((sum, l) => sum + l.views, 0);
+      document.getElementById('stat-favorites').textContent = favorites.length;
+      document.getElementById('stat-notifications').textContent = notifications.length;
+
+      const myListings = document.getElementById('my-listings');
+      const userListings = listings.filter(l => l.seller === currentUser.name);
+      myListings.innerHTML = userListings.length > 0 
+        ? userListings.map(l => `
+            <div style="padding: 0.75rem; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center;">
+              <div>
+                <div>${l.title}</div>
+                <div style="font-size: 0.8rem; color: var(--fg-muted);">${l.views} views</div>
+              </div>
+              <span style="color: var(--accent-cyan);">$${l.price}</span>
+            </div>
+          `).join('')
+        : '<div style="padding: 1rem; color: var(--fg-muted);">No listings yet. <a href="#" onclick="showPage(\'create\')" style="color: var(--accent-cyan);">Create one</a></div>';
+
+      const savedItems = document.getElementById('saved-items');
+      const favListings = listings.filter(l => favorites.includes(l.id));
+      savedItems.innerHTML = favListings.length > 0
+        ? favListings.map(l => `
+            <div style="padding: 0.75rem; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; cursor: pointer;" onclick="showListingDetail(${l.id})">
+              <span>${l.title}</span>
+              <span style="color: var(--accent-cyan);">$${l.price}</span>
+            </div>
+          `).join('')
+        : '<div style="padding: 1rem; color: var(--fg-muted);">No saved items</div>';
+    }
+
+    // ==================== MODAL FUNCTIONS ====================
+    function showAuthModal() {
+      if (currentUser) {
+        showPage('dashboard');
+        return;
+      }
+      document.getElementById('auth-modal').classList.add('active');
+    }
+
+    function closeModal(modalId) {
+      document.getElementById(modalId).classList.remove('active');
+    }
+
+    function toggleAuthForm() {
+      const loginForm = document.getElementById('login-form');
+      const registerForm = document.getElementById('register-form');
+      const title = document.getElementById('auth-title');
+      
+      if (loginForm.style.display === 'none') {
+        loginForm.style.display = 'block';
+        registerForm.style.display = 'none';
+        title.textContent = 'Login';
+      } else {
+        loginForm.style.display = 'none';
+        registerForm.style.display = 'block';
+        title.textContent = 'Create Account';
+      }
+    }
+
+    function showListingDetail(listingId) {
+      const listing = listings.find(l => l.id === listingId);
+      if (!listing) return;
+
+      const modal = document.getElementById('listing-modal');
+      document.getElementById('listing-modal-title').textContent = listing.title;
+      
+      const category = categories.find(c => c.id === listing.category);
+      const avatarContent = getUserAvatar(listing.seller);
+      
+      document.getElementById('listing-modal-content').innerHTML = `
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem;">
+          <div>
+            <div style="background: linear-gradient(135deg, #1a1a2e, #16213e); border-radius: 16px; height: 300px; display: flex; align-items: center; justify-content: center; font-size: 6rem;">
+              ${category?.icon || '📦'}
+            </div>
+            <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 0.5rem; margin-top: 1rem;">
+              ${[1,2,3,4].map(() => `<div style="background: var(--glass); border: 1px solid var(--border); border-radius: 8px; aspect-ratio: 1;"></div>`).join('')}
+            </div>
+          </div>
+          <div>
+            <h2 style="font-size: 1.5rem; font-weight: 700; margin-bottom: 0.5rem;">${listing.title}</h2>
+            <div style="font-size: 2rem; font-weight: 700; color: var(--accent-cyan); margin-bottom: 1rem;">$${listing.price.toLocaleString()}</div>
+            
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1.5rem;">
+              <div style="padding: 0.75rem; background: var(--glass); border-radius: 8px;">
+                <div style="font-size: 0.8rem; color: var(--fg-muted);">Condition</div>
+                <div style="font-weight: 600; text-transform: capitalize;">${listing.condition}</div>
+              </div>
+              <div style="padding: 0.75rem; background: var(--glass); border-radius: 8px;">
+                <div style="font-size: 0.8rem; color: var(--fg-muted);">Location</div>
+                <div style="font-weight: 600;">${listing.location}</div>
+              </div>
+            </div>
+
+            <div style="margin-bottom: 1.5rem;">
+              <h3 style="font-weight: 600; margin-bottom: 0.5rem;">Description</h3>
+              <p style="color: var(--fg-muted); line-height: 1.6;">${listing.description}</p>
+            </div>
+
+            <div style="display: flex; align-items: center; gap: 1rem; padding: 1rem; background: var(--glass); border-radius: 12px; margin-bottom: 1.5rem; cursor: pointer;" onclick="viewUserProfile('${listing.seller}')">
+              <div class="user-avatar" style="width: 48px; height: 48px; font-size: 1.2rem;">${avatarContent}</div>
+              <div style="flex: 1;">
+                <div style="font-weight: 600;">${listing.seller}</div>
+                <div style="font-size: 0.8rem; color: var(--fg-muted);">Posted ${listing.date} · ${listing.views} views</div>
+              </div>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--fg-muted)" stroke-width="2">
+                <polyline points="9 18 15 12 9 6"></polyline>
+              </svg>
+            </div>
+
+            <button class="btn-primary" style="width: 100%;" onclick="startConversation('${listing.seller}')">Contact Seller</button>
+          </div>
+        </div>
+      `;
+      
+      modal.classList.add('active');
+    }
+
+    function showEditProfileModal() {
+      if (!currentUser) return;
+      
+      const editAvatar = document.getElementById('edit-profile-avatar');
+      const editInitial = document.getElementById('edit-avatar-initial');
+      
+      if (currentUser.profilePicture) {
+        editInitial.style.display = 'none';
+        editAvatar.innerHTML = `<img src="${currentUser.profilePicture}" alt="${currentUser.name}" style="width: 100%; height: 100%; object-fit: cover;">`;
+      } else {
+        editInitial.style.display = 'block';
+        editInitial.textContent = currentUser.name[0].toUpperCase();
+      }
+      
+      document.getElementById('edit-name').value = currentUser.name || '';
+      document.getElementById('edit-email').value = currentUser.email || '';
+      document.getElementById('edit-phone').value = currentUser.phone || '';
+      document.getElementById('edit-location').value = currentUser.location || '';
+      document.getElementById('edit-bio').value = currentUser.bio || '';
+      
+      tempProfilePicture = currentUser.profilePicture || null;
+      
+      document.getElementById('edit-profile-modal').classList.add('active');
+    }
+
+    function viewUserProfile(sellerName) {
+      const user = users.find(u => u.name === sellerName);
+      
+      if (currentUser && currentUser.name === sellerName) {
+        closeModal('listing-modal');
+        showPage('dashboard');
+        return;
+      }
+      
+      const avatarContent = getUserAvatar(sellerName);
+      const userListings = listings.filter(l => l.seller === sellerName);
+      
+      document.getElementById('user-profile-content').innerHTML = `
+        <div style="text-align: center; margin-bottom: 1.5rem;">
+          <div class="profile-avatar" style="width: 100px; height: 100px; margin: 0 auto; font-size: 2.5rem;">
+            ${avatarContent}
+          </div>
+          <h2 style="margin-top: 1rem; font-size: 1.5rem;">${sellerName}</h2>
+          <p style="color: var(--fg-muted);">${user?.location || 'Location not specified'}</p>
+          ${user?.bio ? `<p style="color: var(--fg-muted); margin-top: 0.5rem; font-style: italic;">"${user.bio}"</p>` : ''}
+        </div>
+        
+        <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; margin-bottom: 1.5rem;">
+          <div style="text-align: center; padding: 1rem; background: var(--glass); border-radius: 12px;">
+            <div style="font-size: 1.5rem; font-weight: 700; color: var(--accent-cyan);">${userListings.length}</div>
+            <div style="font-size: 0.8rem; color: var(--fg-muted);">Listings</div>
+          </div>
+          <div style="text-align: center; padding: 1rem; background: var(--glass); border-radius: 12px;">
+            <div style="font-size: 1.5rem; font-weight: 700; color: var(--accent-cyan);">${userListings.reduce((sum, l) => sum + l.views, 0)}</div>
+            <div style="font-size: 0.8rem; color: var(--fg-muted);">Views</div>
+          </div>
+          <div style="text-align: center; padding: 1rem; background: var(--glass); border-radius: 12px;">
+            <div style="font-size: 1.5rem; font-weight: 700; color: var(--accent-cyan);">${user?.rating || '4.8'}</div>
+            <div style="font-size: 0.8rem; color: var(--fg-muted);">Rating</div>
+          </div>
+        </div>
+        
+        <h3 style="font-weight: 600; margin-bottom: 1rem;">Listings by ${sellerName}</h3>
+        <div style="max-height: 200px; overflow-y: auto;">
+          ${userListings.length > 0 ? userListings.map(l => `
+            <div style="padding: 0.75rem; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; cursor: pointer;" onclick="closeModal('user-profile-modal'); showListingDetail(${l.id});">
+              <div>
+                <div>${l.title}</div>
+                <div style="font-size: 0.8rem; color: var(--fg-muted);">${l.condition} · ${l.location}</div>
+              </div>
+              <span style="color: var(--accent-cyan); font-weight: 600;">$${l.price}</span>
+            </div>
+          `).join('') : '<div style="padding: 1rem; color: var(--fg-muted); text-align: center;">No listings yet</div>'}
+        </div>
+        
+        ${currentUser ? `
+          <button class="btn-primary" style="width: 100%; margin-top: 1rem;" onclick="closeModal('user-profile-modal'); closeModal('listing-modal'); startConversation('${sellerName}');">Message ${sellerName}</button>
+        ` : `
+          <button class="btn-primary" style="width: 100%; margin-top: 1rem;" onclick="closeModal('user-profile-modal'); showAuthModal();">Login to Message</button>
+        `}
+      `;
+      
+      document.getElementById('user-profile-modal').classList.add('active');
+    }
+
+    // ==================== AUTH FUNCTIONS ====================
+    document.getElementById('login-form').addEventListener('submit', (e) => {
+      e.preventDefault();
+      const email = document.getElementById('login-email').value;
+      const password = document.getElementById('login-password').value;
+
+      const user = users.find(u => u.email === email && u.password === password);
+      if (user) {
+        currentUser = user;
+        localStorage.setItem('marketverse_currentUser', JSON.stringify(currentUser));
+        updateUIForLoggedIn();
+        closeModal('auth-modal');
+        showNotification(`Welcome back, ${user.name}!`, 'success');
+      } else {
+        showNotification('Invalid credentials. Please try again.', 'error');
+      }
+    });
+
+    document.getElementById('register-form').addEventListener('submit', (e) => {
+      e.preventDefault();
+      const name = document.getElementById('register-name').value;
+      const email = document.getElementById('register-email').value;
+      const password = document.getElementById('register-password').value;
+      const confirm = document.getElementById('register-confirm').value;
+
+      if (password !== confirm) {
+        showNotification('Passwords do not match!', 'error');
+        return;
+      }
+
+      if (users.find(u => u.email === email)) {
+        showNotification('Email already registered!', 'error');
+        return;
+      }
+
+      const newUser = { 
+        id: Date.now(), 
+        name, 
+        email, 
+        password,
+        profilePicture: null,
+        phone: '',
+        location: '',
+        bio: '',
+        rating: '5.0',
+        joinedDate: new Date().toISOString().split('T')[0]
+      };
+      users.push(newUser);
+      localStorage.setItem('marketverse_users', JSON.stringify(users));
+
+      currentUser = newUser;
+      localStorage.setItem('marketverse_currentUser', JSON.stringify(currentUser));
+      
+      updateUIForLoggedIn();
+      closeModal('auth-modal');
+      showNotification(`Welcome to MarketVerse, ${name}! Please check your email for verification.`, 'success');
+    });
+
+    function updateUIForLoggedIn() {
+      const userAvatar = document.getElementById('user-avatar');
+      if (currentUser) {
+        if (currentUser.profilePicture) {
+          userAvatar.innerHTML = `<img src="${currentUser.profilePicture}" alt="${currentUser.name}">`;
+        } else {
+          userAvatar.innerHTML = currentUser.name[0].toUpperCase();
+        }
+      }
+    }
+
+    function checkLoggedIn() {
+      if (currentUser) {
+        updateUIForLoggedIn();
+      }
+    }
+
+    function handleUserClick() {
+      if (currentUser) {
+        showPage('dashboard');
+      } else {
+        showAuthModal();
+      }
+    }
+
+    // ==================== PROFILE PICTURE ====================
+    function handleProfilePictureUpload(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+      
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        if (currentUser) {
+          currentUser.profilePicture = e.target.result;
+          
+          // Update in users array
+          const userIndex = users.findIndex(u => u.id === currentUser.id);
+          if (userIndex !== -1) {
+            users[userIndex].profilePicture = e.target.result;
+            localStorage.setItem('marketverse_users', JSON.stringify(users));
+          }
+          
+          localStorage.setItem('marketverse_currentUser', JSON.stringify(currentUser));
+          
+          updateUIForLoggedIn();
+          renderDashboard();
+          showNotification('Profile picture updated!', 'success');
+        }
+      };
+      reader.readAsDataURL(file);
+    }
+
+    function handleEditProfilePicture(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+      
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        tempProfilePicture = e.target.result;
+        
+        const editAvatar = document.getElementById('edit-profile-avatar');
+        editAvatar.innerHTML = `<img src="${tempProfilePicture}" alt="Preview" style="width: 100%; height: 100%; object-fit: cover;">`;
+      };
+      reader.readAsDataURL(file);
+    }
+
+    document.getElementById('edit-profile-form').addEventListener('submit', (e) => {
+      e.preventDefault();
+      
+      if (!currentUser) return;
+      
+      currentUser.name = document.getElementById('edit-name').value;
+      currentUser.email = document.getElementById('edit-email').value;
+      currentUser.phone = document.getElementById('edit-phone').value;
+      currentUser.location = document.getElementById('edit-location').value;
+      currentUser.bio = document.getElementById('edit-bio').value;
+      
+      if (tempProfilePicture) {
+        currentUser.profilePicture = tempProfilePicture;
+      }
+      
+      // Update in users array
+      const userIndex = users.findIndex(u => u.id === currentUser.id);
+      if (userIndex !== -1) {
+        users[userIndex] = currentUser;
+        localStorage.setItem('marketverse_users', JSON.stringify(users));
+      }
+      
+      localStorage.setItem('marketverse_currentUser', JSON.stringify(currentUser));
+      
+      updateUIForLoggedIn();
+      renderDashboard();
+      closeModal('edit-profile-modal');
+      showNotification('Profile updated successfully!', 'success');
+      
+      tempProfilePicture = null;
+    });
+
+    // ==================== LISTING FUNCTIONS ====================
+    document.getElementById('create-listing-form').addEventListener('submit', (e) => {
+      e.preventDefault();
+
+      if (!currentUser) {
+        showAuthModal();
+        return;
+      }
+
+      const newListing = {
+        id: Date.now(),
+        title: document.getElementById('listing-title').value,
+        price: parseFloat(document.getElementById('listing-price').value),
+        category: document.getElementById('listing-category').value,
+        condition: document.getElementById('listing-condition').value,
+        location: document.getElementById('listing-location').value,
+        description: document.getElementById('listing-description').value,
+        seller: currentUser.name,
+        sellerId: currentUser.id,
+        views: 0,
+        date: new Date().toISOString().split('T')[0],
+        favorites: 0
+      };
+
+      listings.unshift(newListing);
+      showNotification('Listing created successfully!', 'success');
+      e.target.reset();
+      uploadedImages = [];
+      document.getElementById('image-previews').innerHTML = '';
+      showPage('browse');
+    });
+
+    function handleImageUpload(event) {
+      const files = event.target.files;
+      const previewContainer = document.getElementById('image-previews');
+      
+      if (uploadedImages.length + files.length > 5) {
+        showNotification('Maximum 5 images allowed', 'error');
+        return;
+      }
+
+      Array.from(files).forEach(file => {
+        if (uploadedImages.length >= 5) return;
+        
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          uploadedImages.push(e.target.result);
+          renderImagePreviews();
+        };
+        reader.readAsDataURL(file);
+      });
+    }
+
+    function renderImagePreviews() {
+      const previewContainer = document.getElementById('image-previews');
+      previewContainer.innerHTML = uploadedImages.map((img, idx) => `
+        <div class="image-preview">
+          <img src="${img}" alt="Preview ${idx + 1}">
+          <button onclick="removeImage(${idx})" style="position: absolute; top: 4px; right: 4px; width: 24px; height: 24px; background: rgba(255,0,80,0.8); border: none; border-radius: 50%; cursor: pointer; color: white; font-size: 14px; display: flex; align-items: center; justify-content: center;">×</button>
+        </div>
+      `).join('');
+    }
+
+    function removeImage(index) {
+      uploadedImages.splice(index, 1);
+      renderImagePreviews();
+    }
+
+    // ==================== SEARCH & FILTER ====================
+    function searchListings() {
+      const query = document.getElementById('search-input').value.toLowerCase();
+      const category = document.getElementById('category-filter').value;
+      
+      let filtered = listings.filter(l => {
+        const matchesQuery = l.title.toLowerCase().includes(query) || l.description.toLowerCase().includes(query);
+        const matchesCategory = !category || l.category === category;
+        return matchesQuery && matchesCategory;
+      });
+
+      showPage('browse');
+      document.getElementById('browse-listings-grid').innerHTML = filtered.length > 0
+        ? filtered.map(l => createListingCard(l)).join('')
+        : '<div style="grid-column: 1/-1; text-align: center; padding: 4rem; color: var(--fg-muted);">No listings found</div>';
+    }
+
+    function filterByCategory(categoryId) {
+      showPage('browse');
+      document.getElementById('filter-category').value = categoryId;
+      applyFilters();
+    }
+
+    function applyFilters() {
+      const category = document.getElementById('filter-category').value;
+      const priceRange = document.getElementById('filter-price').value;
+      const condition = document.getElementById('filter-condition').value;
+      const location = document.getElementById('filter-location').value.toLowerCase();
+      
+      let filtered = listings.filter(l => {
+        let matches = true;
+        
+        if (category && l.category !== category) matches = false;
+        if (condition && l.condition !== condition) matches = false;
+        if (location && !l.location.toLowerCase().includes(location)) matches = false;
+        
+        if (priceRange) {
+          const [min, max] = priceRange.split('-').map(v => v === '+' ? Infinity : parseInt(v));
+          if (priceRange.includes('+')) {
+            if (l.price < parseInt(priceRange)) matches = false;
+          } else {
+            if (l.price < min || l.price > max) matches = false;
+          }
+        }
+        
+        return matches;
+      });
+
+      document.getElementById('browse-listings-grid').innerHTML = filtered.length > 0
+        ? filtered.map(l => createListingCard(l)).join('')
+        : '<div style="grid-column: 1/-1; text-align: center; padding: 4rem; color: var(--fg-muted);">No listings found matching your criteria</div>';
+    }
+
+    // ==================== FAVORITES ====================
+    function toggleFavorite(listingId) {
+      const index = favorites.indexOf(listingId);
+      if (index === -1) {
+        favorites.push(listingId);
+        showNotification('Added to favorites!', 'success');
+      } else {
+        favorites.splice(index, 1);
+        showNotification('Removed from favorites', 'info');
+      }
+      localStorage.setItem('marketverse_favorites', JSON.stringify(favorites));
+      renderListings();
+      if (document.getElementById('browse-listings-grid')) {
+        renderBrowseListings();
+      }
+    }
+
+    // ==================== MESSAGES ====================
+    function startConversation(sellerName) {
+      if (!currentUser) {
+        showAuthModal();
+        return;
+      }
+
+      closeModal('listing-modal');
+      
+      let conv = conversations.find(c => c.seller === sellerName);
+      if (!conv) {
+        conv = {
+          seller: sellerName,
+          messages: []
+        };
+        conversations.push(conv);
+        localStorage.setItem('marketverse_conversations', JSON.stringify(conversations));
+      }
+      
+      showPage('messages');
+      selectConversation(conversations.length - 1);
+    }
+
+    function selectConversation(index) {
+      const conv = conversations[index];
+      if (!conv) return;
+
+      // Update active state
+      document.querySelectorAll('.conversation-item').forEach((item, i) => {
+        item.classList.toggle('active', i === index);
+      });
+      
+      document.getElementById('chat-with').textContent = conv.seller;
+      
+      const chatAvatar = document.getElementById('chat-avatar');
+      chatAvatar.innerHTML = getUserAvatar(conv.seller);
+      
+      const messagesContainer = document.getElementById('chat-messages');
+      messagesContainer.innerHTML = conv.messages.length > 0
+        ? conv.messages.map(msg => `
+            <div class="message ${msg.sent ? 'sent' : ''}">
+              <div class="message-bubble">${msg.text}</div>
+              <div style="font-size: 0.7rem; color: var(--fg-muted); margin-top: 0.25rem; ${msg.sent ? 'text-align: right;' : ''}">${msg.time}</div>
+            </div>
+          `).join('')
+        : '<p style="color: var(--fg-muted); text-align: center; margin-top: 50%;">Start the conversation</p>';
+      
+      messagesContainer.scrollTop = messagesContainer.scrollHeight;
+    }
+
+    function sendMessage() {
+      if (!currentUser) {
+        showAuthModal();
+        return;
+      }
+
+      const input = document.getElementById('message-input');
+      const text = input.value.trim();
+      if (!text) return;
+
+      // Find active conversation
+      let activeIndex = 0;
+      document.querySelectorAll('.conversation-item').forEach((item, i) => {
+        if (item.classList.contains('active')) activeIndex = i;
+      });
+      
+      const activeConv = conversations[activeIndex];
+      if (activeConv) {
+        activeConv.messages.push({
+          text,
+          sent: true,
+          time: new Date().toLocaleTimeString()
+        });
+        localStorage.setItem('marketverse_conversations', JSON.stringify(conversations));
+        
+        // Simulate response
+        setTimeout(() => {
+          activeConv.messages.push({
+            text: "Thanks for your message! I'll get back to you shortly.",
+            sent: false,
+            time: new Date().toLocaleTimeString()
+          });
+          localStorage.setItem('marketverse_conversations', JSON.stringify(conversations));
+          selectConversation(activeIndex);
+        }, 1000);
+      }
+
+      input.value = '';
+      selectConversation(activeIndex);
+    }
+
+    // ==================== NOTIFICATIONS ====================
+    function toggleNotifications() {
+      document.getElementById('notif-dropdown').classList.toggle('active');
+    }
+
+    function showNotification(message, type = 'info') {
+      // Add to notifications
+      const newNotif = {
+        id: Date.now(),
+        type: type === 'error' ? 'view' : type === 'success' ? 'favorite' : 'message',
+        text: message,
+        time: 'Just now'
+      };
+      notifications.unshift(newNotif);
+      localStorage.setItem('marketverse_notifications', JSON.stringify(notifications));
+      renderNotifications();
+    }
+
+    // ==================== THEME ====================
+    function toggleTheme() {
+      document.querySelector('.theme-toggle').classList.toggle('light');
+      document.body.classList.toggle('light-mode');
+    }
+
+    // ==================== NAV CLICK HANDLERS ====================
+    document.querySelectorAll('.nav-link').forEach(link => {
+      link.addEventListener('click', (e) => {
+        e.preventDefault();
+        const page = link.dataset.page;
+        if (page) showPage(page);
+      });
+    });
+
+    // Close dropdowns on outside click
+    document.addEventListener('click', (e) => {
+      if (!e.target.closest('.notification-btn') && !e.target.closest('.notifications-dropdown')) {
+        document.getElementById('notif-dropdown').classList.remove('active');
+      }
+    });
+
+    // Keyboard navigation
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') {
+        document.querySelectorAll('.modal-overlay').forEach(modal => {
+          modal.classList.remove('active');
+        });
+      }
+    });
+  </script>
+</body>
+</html>
